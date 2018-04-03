@@ -47,6 +47,7 @@ object BuildSettings {
       crossPaths := true,
       publishMavenStyle := true,
       SbtPgp.useGpg := true,
+      credentials += Credentials(sbt.Path.userHome / ".sbt" / ".found-credentials"),
       publishTo <<= version { version =>
         if (version.trim.endsWith("SNAPSHOT")) {
           Some("Cloud snapshots" at "https://artifactory.found.no/artifactory/libs-snapshot-local")
