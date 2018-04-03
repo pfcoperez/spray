@@ -10,7 +10,7 @@ import com.typesafe.sbt.osgi.SbtOsgi
 import SbtOsgi._
 
 object BuildSettings {
-  val VERSION = "1.3.4"
+  val VERSION = "1.3.4-elastic-cloud-SNAPSHOT"
 
   lazy val basicSettings = seq(
     version               := NightlyBuildSupport.buildVersion(VERSION),
@@ -22,7 +22,7 @@ object BuildSettings {
     startYear             := Some(2011),
     licenses              := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     scalaVersion          := "2.11.8",
-    crossScalaVersions    := Seq("2.11.8", "2.10.6"),
+//    crossScalaVersions    := Seq("2.11.8", "2.10.6"),
     resolvers             ++= Dependencies.resolutionRepos,
     scalacOptions         := Seq(
       "-encoding", "utf8",
@@ -39,7 +39,7 @@ object BuildSettings {
     basicSettings ++ formatSettings ++
     NightlyBuildSupport.settings ++
     SbtPgp.settings ++
-    seq(
+    Seq(
       // scaladoc settings
       (scalacOptions in doc) <++= (name, version).map { (n, v) => Seq("-doc-title", n, "-doc-version", v) },
 
@@ -48,16 +48,10 @@ object BuildSettings {
       publishMavenStyle := true,
       SbtPgp.useGpg := true,
       publishTo <<= version { version =>
-        Some {
-          if (version.contains("-")) {
-            "spray nexus" at {
-              // public uri is repo.spray.io, we use an SSH tunnel to the nexus here
-              "http://localhost:42424/content/repositories/" + {
-                if (version.trim.endsWith("SNAPSHOT")) "snapshots/" else
-                if (NightlyBuildSupport.isNightly) "nightlies/" else "releases/"
-              }
-            }
-          } else "sonatype release staging" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+        if (version.trim.endsWith("SNAPSHOT")) {
+          Some("Cloud snapshots" at "https://artifactory.found.no/artifactory/libs-snapshot-local")
+        } else {
+          Some("Cloud releases" at "https://artifactory.found.no/artifactory/libs-release-local")
         }
       },
       pomIncludeRepository := { _ => false },

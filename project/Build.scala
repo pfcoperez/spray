@@ -15,8 +15,10 @@ object Build extends Build {
   // -------------------------------------------------------------------------------------------------------------------
 
   lazy val root = Project("root",file("."))
-    .aggregate(docs, examples, sprayCaching, sprayCan, sprayCanTests, sprayClient, sprayHttp, sprayHttpx,
-      sprayIO, sprayIOTests, sprayRouting, sprayRoutingShapeless2, sprayRoutingTests, sprayRoutingShapeless2Tests, sprayServlet, sprayTestKit, sprayUtil)
+    .aggregate(
+      // docs, examples, sprayRoutingShapeless2Tests,
+      sprayCaching, sprayCan, sprayCanTests, sprayClient, sprayHttp, sprayHttpx,
+      sprayIO, sprayIOTests, sprayRouting, sprayRoutingShapeless2, sprayRoutingTests, sprayServlet, sprayTestKit, sprayUtil)
     .settings(basicSettings: _*)
     .settings(noPublishing: _*)
 
