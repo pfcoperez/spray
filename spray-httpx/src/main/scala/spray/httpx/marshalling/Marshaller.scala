@@ -20,6 +20,8 @@ import scala.util.control.NonFatal
 import akka.actor.ActorRef
 import spray.http._
 
+import scala.reflect.runtime.universe
+
 //# source-quote
 trait Marshaller[-T] {
   def apply(value: T, ctx: MarshallingContext)
