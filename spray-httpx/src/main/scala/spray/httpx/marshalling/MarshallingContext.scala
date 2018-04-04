@@ -18,8 +18,7 @@ package spray.httpx.marshalling
 
 import akka.actor.ActorRef
 import spray.http._
-
-import scala.reflect.runtime.universe.TypeTag
+import spray.util.ContextAttributes
 
 trait MarshallingContext {
 
@@ -90,7 +89,7 @@ trait MarshallingContext {
         underlying.startChunkedMessage(f(entity), ack, headers)
     }
 
-  val attributes: Map[TypeTag[_], Any]
+  val attributes: ContextAttributes
 }
 
 /**
@@ -106,7 +105,7 @@ class DelegatingMarshallingContext(protected val underlying: MarshallingContext)
   def startChunkedMessage(entity: HttpEntity, ack: Option[Any] = None, headers: Seq[HttpHeader] = Nil)(implicit sender: ActorRef) =
     underlying.startChunkedMessage(entity, ack, headers)
 
-  override val attributes: Map[TypeTag[_], Any] = underlying.attributes
+  override val attributes: ContextAttributes = underlying.attributes
 }
 
 trait ToResponseMarshallingContext {
@@ -177,7 +176,7 @@ trait ToResponseMarshallingContext {
         underlying.startChunkedMessage(f(response), ack)
     }
 
-  val attributes: Map[TypeTag[_], Any]
+  val attributes: ContextAttributes
 }
 
 /**
@@ -193,5 +192,5 @@ class DelegatingToResponseMarshallingContext(protected val underlying: ToRespons
   def startChunkedMessage(response: HttpResponse, ack: Option[Any])(implicit sender: ActorRef): ActorRef =
     underlying.startChunkedMessage(response, ack)
 
-  override val attributes: Map[TypeTag[_], Any] = underlying.attributes
+  override val attributes: ContextAttributes = underlying.attributes
 }

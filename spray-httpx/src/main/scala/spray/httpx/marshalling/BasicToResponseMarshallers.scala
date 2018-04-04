@@ -3,8 +3,7 @@ package spray.httpx.marshalling
 import spray.http._
 import spray.http.HttpResponse
 import akka.actor.ActorRef
-
-import scala.reflect.runtime.universe.TypeTag
+import spray.util.ContextAttributes
 
 trait BasicToResponseMarshallers {
   implicit def fromResponse: ToResponseMarshaller[HttpResponse] = ToResponseMarshaller((value, ctx) ⇒ ctx.marshalTo(value))
@@ -34,7 +33,7 @@ trait BasicToResponseMarshallers {
           def startChunkedMessage(entity: HttpEntity, ack: Option[Any], hs: Seq[HttpHeader])(implicit sender: ActorRef): ActorRef =
             ctx.startChunkedMessage(HttpResponse(status, entity, (headers ++ hs).toList), ack)
 
-          override val attributes: Map[TypeTag[_], Any] = ctx.attributes
+          override val attributes: ContextAttributes = ctx.attributes
         }
         tMarshaller(value._3, mCtx)
       }

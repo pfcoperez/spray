@@ -17,8 +17,6 @@
 package spray.routing
 
 import scala.collection.GenTraversableOnce
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success }
 import akka.actor.{ ActorRef, Status }
 import akka.spray.UnregisteredActorRef
 import spray.httpx.marshalling._
@@ -26,6 +24,7 @@ import spray.http._
 import StatusCodes._
 import HttpHeaders._
 import MediaTypes._
+import spray.util.ContextAttributes
 
 import scala.reflect.runtime.universe.TypeTag
 
@@ -34,21 +33,19 @@ import scala.reflect.runtime.universe.TypeTag
  * as it flows through a ''spray'' Route structure.
  */
 case class RequestContext(request: HttpRequest, responder: ActorRef, unmatchedPath: Uri.Path,
-                          attributes: Map[TypeTag[_], Any] = Map.empty) { requestContext ⇒
+                          attributes: ContextAttributes = ContextAttributes.empty) { requestContext ⇒
 
   /**
    * Returns a copy of this context with a new attribute added.
    */
   def withAttribute[T](value: T)(implicit t: TypeTag[T]): RequestContext = {
-    copy(attributes = attributes.updated(t, value))
+    copy(attributes = attributes.updated(value))
   }
 
   /**
    * Optionally get an attribute identified by its type.
    */
-  def getAttribute[T](implicit t: TypeTag[T]): Option[T] = {
-    attributes.get(t).asInstanceOf[Option[T]]
-  }
+  def getAttribute[T](implicit t: TypeTag[T]): Option[T] = attributes.get(t)
 
   /**
    * Returns a copy of this context with the HttpRequest transformed by the given function.
@@ -251,7 +248,7 @@ case class RequestContext(request: HttpRequest, responder: ActorRef, unmatchedPa
         responder
       }
 
-      override val attributes: Map[TypeTag[_], Any] = requestContext.attributes
+      override val attributes: ContextAttributes = requestContext.attributes
     }
     marshaller(obj, ctx)
   }

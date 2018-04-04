@@ -23,16 +23,15 @@ import java.util.concurrent.TimeUnit._
 import scala.annotation.tailrec
 import akka.spray.UnregisteredActorRef
 import akka.util.Timeout
-import akka.actor.{ ActorRefFactory, ActorRef }
+import akka.actor.{ ActorRef, ActorRefFactory }
 import spray.http._
-
-import scala.reflect.runtime.universe.TypeTag
+import spray.util.ContextAttributes
 
 /**
  * A MarshallingContext serving as a marshalling receptacle, collecting the output of a Marshaller
  * for subsequent postprocessing.
  */
-class CollectingMarshallingContext(implicit actorRefFactory: ActorRefFactory = null, val attributes: Map[TypeTag[_], Any] = Map.empty) extends MarshallingContext {
+class CollectingMarshallingContext(implicit actorRefFactory: ActorRefFactory = null, val attributes: ContextAttributes = ContextAttributes.empty) extends MarshallingContext {
   private val _entityAndHeaders = new AtomicReference[Option[(HttpEntity, Seq[HttpHeader])]](None)
   private val _error = new AtomicReference[Option[Throwable]](None)
   private val _chunkedMessageEnd = new AtomicReference[Option[ChunkedMessageEnd]](None)
