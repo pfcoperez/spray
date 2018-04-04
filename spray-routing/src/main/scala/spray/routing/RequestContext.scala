@@ -27,11 +27,27 @@ import StatusCodes._
 import HttpHeaders._
 import MediaTypes._
 
+import scala.reflect.runtime.universe._
+
 /**
  * Immutable object encapsulating the context of an [[spray.http.HttpRequest]]
  * as it flows through a ''spray'' Route structure.
  */
-case class RequestContext(request: HttpRequest, responder: ActorRef, unmatchedPath: Uri.Path) {
+case class RequestContext(request: HttpRequest, responder: ActorRef, unmatchedPath: Uri.Path, attributes: Map[TypeTag[_], Any]) {
+
+  /**
+    * Returns a copy of this context with a new attribute added.
+    */
+  def withAttribute[T](value: T)(implicit t: TypeTag[T]): RequestContext = {
+    copy(attributes = attributes.updated(t, value))
+  }
+
+  /**
+    * Optionally get an attribute identified by its type.
+    */
+  def getAttribute[T](implicit t: TypeTag[T]): Option[T] = {
+    attributes.get(t).asInstanceOf[Option[T]]
+  }
 
   /**
    * Returns a copy of this context with the HttpRequest transformed by the given function.
@@ -223,6 +239,7 @@ case class RequestContext(request: HttpRequest, responder: ActorRef, unmatchedPa
    */
   def complete[T](obj: T)(implicit marshaller: ToResponseMarshaller[T]): Unit = {
     val ctx = new ToResponseMarshallingContext {
+      val attributes = this.attributes
       def tryAccept(contentTypes: Seq[ContentType]) = request.acceptableContentType(contentTypes)
       def rejectMarshalling(onlyTo: Seq[ContentType]): Unit = reject(UnacceptedResponseContentTypeRejection(onlyTo))
       def marshalTo(response: HttpResponse): Unit = responder ! response

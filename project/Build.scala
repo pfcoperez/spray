@@ -123,6 +123,7 @@ object Build extends Build {
         "spray.io.*;resolution:=optional"
       )): _*)
       .settings(libraryDependencies ++= provided(akkaActor))
+      .settings(libraryDependencies ++= Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value))
 
   lazy val sprayRouting =
     sprayRoutingProject("spray-routing", file("spray-routing"))
