@@ -20,7 +20,7 @@ import scala.util.control.NonFatal
 import akka.actor.ActorRef
 import spray.http._
 
-import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe.TypeTag
 
 //# source-quote
 trait Marshaller[-T] {
@@ -110,6 +110,8 @@ object ToResponseMarshaller extends BasicToResponseMarshallers
             def handleError(error: Throwable): Unit = ctx.handleError(error)
             def startChunkedMessage(response: HttpResponse, ack: Option[Any])(implicit sender: ActorRef): ActorRef =
               ctx.startChunkedMessage(response, ack)(sender)
+
+            override val attributes: Map[TypeTag[_], Any] = ctx.attributes
           })
         case Nil ⇒ ctx.rejectMarshalling(previouslySupported.toSeq)
       }
