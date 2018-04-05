@@ -18,18 +18,19 @@ package spray.httpx
 
 import scala.reflect.ClassTag
 import akka.actor.ActorRef
-import akka.event.{ Logging, LoggingAdapter }
+import akka.event.{Logging, LoggingAdapter}
 import spray.httpx.encoding.Encoder
 import spray.httpx.marshalling._
 import spray.http.parser.HttpParser
 import spray.http._
 import HttpMethods._
 import HttpHeaders._
+import spray.util.ContextAttributes
 
 trait RequestBuilding extends TransformerPipelineSupport {
   type RequestTransformer = HttpRequest ⇒ HttpRequest
 
-  class RequestBuilder(val method: HttpMethod) {
+  class RequestBuilder(val method: HttpMethod, contextAttributes: ContextAttributes = ContextAttributes.empty) {
     def apply(): HttpRequest = apply("/")
     def apply(uri: String): HttpRequest = apply[String](uri, None)
     def apply[T: Marshaller](uri: String, content: T): HttpRequest = apply(uri, Some(content))
@@ -41,6 +42,8 @@ trait RequestBuilding extends TransformerPipelineSupport {
         override def startChunkedMessage(entity: HttpEntity, ack: Option[Any],
                                          headers: Seq[HttpHeader])(implicit sender: ActorRef) =
           sys.error("RequestBuilding with marshallers producing chunked requests is not supported")
+
+        override val attributes: ContextAttributes = contextAttributes
       }
       content match {
         case None ⇒ HttpRequest(method, uri)
@@ -50,6 +53,9 @@ trait RequestBuilding extends TransformerPipelineSupport {
         }
       }
     }
+
+    def withContextAttributes(contextAttributes: ContextAttributes): RequestBuilder =
+      new RequestBuilder(method, contextAttributes)
   }
 
   val Get = new RequestBuilder(GET)

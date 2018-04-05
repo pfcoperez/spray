@@ -20,6 +20,8 @@ import org.specs2.mutable.Specification
 import spray.http._
 import HttpMethods._
 import HttpHeaders._
+import spray.httpx.marshalling.{Marshaller, MarshallingContext}
+import spray.util.ContextAttributes
 
 class RequestBuildingSpec extends Specification with RequestBuilding {
 
@@ -31,6 +33,22 @@ class RequestBuildingSpec extends Specification with RequestBuilding {
       Post("/abc") === HttpRequest(POST, "/abc")
       Patch("/abc", "content") === HttpRequest(PATCH, "/abc", entity = "content")
       Put("/abc", Some("content")) === HttpRequest(PUT, "/abc", entity = "content")
+    }
+
+    "construct requests with context attributes" >> {
+
+      val attributes: ContextAttributes = ContextAttributes.empty.updated(42)
+
+      case class C(x: Int)
+
+      implicit val _: Marshaller[C] = new Marshaller[C] {
+        override def apply(value: C, ctx: MarshallingContext): Unit = {
+          ctx.attributes.get[Int] === Some(42)
+          ctx.marshalTo(HttpEntity(value.toString))
+        }
+      }
+
+      Post.withContextAttributes(attributes)("/abc", C(42)) === HttpRequest(POST, "/abc", entity = HttpEntity("C(42)"))
     }
 
     "provide a working `addHeader` transformer" >> {
